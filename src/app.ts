@@ -119,7 +119,29 @@ function LmbClickShown(clickedField:Field){
     var flaggedFields = 0;
     
     var safeFields:Field[] = [];
-    
+
+    offset.forEach(function(offPoint){
+        var tempPoint = clickedField.pnt.Add_Point(offPoint)
+        if (!tempPoint.Inside_Boundries(rows, columns)){
+            return;
+        }
+
+        var fieldToBeClicked = mapGrid[tempPoint.row][tempPoint.col]
+        if (fieldToBeClicked.isFlag){
+            flaggedFields++;
+        } else if (fieldToBeClicked.isHidden){
+            safeFields.push(fieldToBeClicked)
+        }
+    })
+
+    if(flaggedFields == nearBombs){
+        safeFields.forEach(function(fTC){
+            if (fTC.isHidden){
+                LmbClickHidden(fTC)
+            }
+        })
+    }
+
 }
 
 export function RmbClick(clickedField:Field){
