@@ -22,7 +22,7 @@ export class MapGenerator{
         this.bombCordsConst = this.InitBombCordsConst(this.rows, this.cols);
     }
 
-    GenerateMap(firstClick:Point, map:[][]){
+    GenerateMap(firstClick:Point, map: any[][]){
         var updatedMap = map.slice();
         var workBombCords = this.bombCordsConst.slice();
         var rows = this.rows;
@@ -53,7 +53,7 @@ export class MapGenerator{
         })
 
         console.log(updatedMap)
-
+        console.log(map)
         return updatedMap;
     }
 

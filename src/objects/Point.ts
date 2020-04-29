@@ -18,4 +18,8 @@ export class Point {
         } 
         return true;
     }
+
+    ToString(){
+        return `${this.row}-${this.col}`
+    }
 }

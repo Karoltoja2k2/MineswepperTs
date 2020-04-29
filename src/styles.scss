@@ -1,0 +1,42 @@
+body{
+    background: green;
+}
+
+.grid{
+    background: red;
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    grid-template-columns: repeat(30, 30px);
+    grid-template-rows: repeat(16, 30px);
+}
+
+.hidden{
+    border: 0px;
+    width: 30px;
+    height: 30px;
+    background: darkblue;
+}
+
+.shown{
+    border: 0px;
+    width: 30px;
+    height: 30px;
+    font-size: 22px;
+    background: lightgray;
+}
+
+.bomb{
+    border: 0px;
+    width: 30px;
+    height: 30px;
+    background: black;
+}
+
+
+.flagged{
+    border: 0px;
+    width: 30px;
+    height: 30px;
+    background: orange;
+}
