@@ -4,6 +4,7 @@ import { MapGenerator } from './objects/MapGenerator';
 
 import './styles.scss'
 import Grid from './components/grid';
+import Game from './components/game';
 
 let mapGrid: Field[][];
 let mapGenerator:MapGenerator;
@@ -27,9 +28,9 @@ const app = function(){
         mapGrid[i]=new Array(columns)
     }
 
-    document.getElementById('root')!.innerHTML = Grid()
+    document.getElementById('root')!.innerHTML = Game()
     var grid = document.getElementById('grid')
-    document.getElementById('newGameBtn')!.addEventListener('click', NewGame)
+    document.getElementById('newGameBtn')?.addEventListener('click', NewGame)
 
     for (let i = 0; i < rows; i++) {
         for (let j = 0; j < columns; j++) {
@@ -141,7 +142,6 @@ function LmbClickShown(clickedField:Field){
             }
         })
     }
-
 }
 
 export function RmbClick(clickedField:Field){
