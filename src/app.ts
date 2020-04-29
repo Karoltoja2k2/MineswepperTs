@@ -10,9 +10,10 @@ let mapGrid: Field[][];
 let mapGenerator:MapGenerator;
 let firstClick = true;
 
-let rows = 16;
-let columns = 30;
-let bombs = 99;
+let rows = 9;
+let columns = 9;
+let bombs = 10;
+let chosenSize = 1;
 
 const offset:Point[] = 
 [
@@ -30,7 +31,9 @@ const app = function(){
 
     document.getElementById('root')!.innerHTML = Game()
     var grid = document.getElementById('grid')
+    grid?.setAttribute('class', `grid${chosenSize}`)
     document.getElementById('newGameBtn')?.addEventListener('click', NewGame)
+    document.getElementById('changeSizeBtn')!.addEventListener('click', ChangeSize)
 
     for (let i = 0; i < rows; i++) {
         for (let j = 0; j < columns; j++) {
@@ -46,13 +49,66 @@ const app = function(){
 
 app();
 
+function ChangeSize(){
+    if(chosenSize < 5){
+        chosenSize++;
+    } else {
+        chosenSize = 1
+    }
+
+    console.log(chosenSize)
+    
+    switch(chosenSize){
+        case 1:
+            SetSize(9, 9, 10)
+            return;
+        case 2:
+            SetSize(16, 16, 40)
+            return;
+        case 3:
+            SetSize(16, 30, 99)
+            return;
+        case 4:
+            SetSize(38, 60, 500)
+            return;
+        case 5:
+            SetSize(100, 60, 999)
+            return;
+    }
+}
+
+function SetSize(r:number, c:number, b:number){
+    rows = r;
+    columns = c;
+    bombs = b;
+
+    var grid = document.getElementById('grid')
+    grid?.setAttribute('class', `grid${chosenSize}`)
+
+    mapGrid = new Array(rows)
+    for (let i = 0; i < rows; i++){
+        mapGrid[i]=new Array(columns)
+    }
+
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < columns; j++) {
+            mapGrid[i][j] = new Field(i, j);
+            var btn:HTMLButtonElement = mapGrid[i][j].btn
+            btn.addEventListener('click', MouseClick)
+            btn.addEventListener('contextmenu', MouseClick)
+            grid!.append(btn)
+        }        
+    }        
+    mapGenerator = new MapGenerator(rows, columns, bombs)
+}
+
 function NewGame(){
     firstClick = true;
     for (let i = 0; i < rows; i++) {
         for (let j = 0; j < columns; j++) {
             mapGrid[i][j].RestartField();            
         }        
-    }     
+    }    
 }
 
 
@@ -84,11 +140,10 @@ export function MouseClick(event:MouseEvent){
 
 }
 
-const colors:string[] = ['lightgray', 'darkcyan', 'green', 'red', 'darkslateblue', 'brown', 'seagreen', 'orange', 'black']
+const colors:string[] = ['lightgray', 'darkcyan', 'green', 'darkred', 'darkslateblue', 'brown', 'seagreen', 'orange', 'black']
 
 
 function LmbClickHidden(clickedField:Field){
-    clickedField.isHidden = false;
     var btn:HTMLButtonElement = clickedField.btn;
     if (clickedField.isBomb){
         btn.innerHTML = 'B'
@@ -96,9 +151,11 @@ function LmbClickHidden(clickedField:Field){
         GameOver(false);
         return;
     }
+    if(clickedField.isFlag){
+        return;
+    }
+    clickedField.isHidden = false;
     clickedField.btn.innerHTML = clickedField.nBombs == 0 ? "" : `${clickedField.nBombs}`
-    // clickedField.btn.setAttribute('style', `color: ${colors[clickedField.nBombs]};`)
-    // clickedField.btn.style.color = `red`
     clickedField.btn.setAttribute('style', `color: ${colors[clickedField.nBombs]};`)
     clickedField.btn.setAttribute('class', 'shown')
 
@@ -146,10 +203,9 @@ function LmbClickShown(clickedField:Field){
 
 export function RmbClick(clickedField:Field){
     if(clickedField.isHidden){
-        console.log('works')
         clickedField.isFlag = !clickedField.isFlag;
-        var color = clickedField.isFlag ? 'orange' : 'darkblue'
-        clickedField.btn.setAttribute('style', `background: ${color};`)
+        var className = clickedField.isFlag ? 'flagged' : 'hidden'
+        clickedField.btn.setAttribute('class', className)
     }
 }
 

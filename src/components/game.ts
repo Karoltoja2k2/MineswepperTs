@@ -4,11 +4,16 @@ const Game = () => {
     <div class="background">
         <div class="gameContainer">
             <div class="menu">
-                <h1>saper.exe</h1>
-                <button id="newGameBtn">New game</button>
-                <button id="newGameBtn">Difficult</button>
-
-                <label>asd</label>
+                <div class="counter">
+                    <h1>091</h1>
+                </div>
+                <div class="midButtons">
+                    <button id="newGameBtn">New game</button>
+                    <button id="changeSizeBtn">Change size</button>
+                </div>
+                <div class="counter">
+                    <h1>012</h1>
+                </div>
             </div>
 
             
