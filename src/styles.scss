@@ -33,6 +33,8 @@ button:focus {
 .gameContainer{
     height: auto;
     width: auto;    
+    margin-top: 50px;
+    margin-bottom: 50px;
     box-shadow: 5px 2px 25px 5px rgba(0, 0, 0, 0.3);
     background: url("./img/noise.png");
     display: flex;
@@ -78,6 +80,58 @@ button:focus {
         }
     }
 }
+
+.settings{
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    opacity: 80%;
+}
+
+.dropbtn {
+    position: relative;
+    background: url("./img/logo.jpg");
+    color: red;
+    object-fit: cover;
+    padding: 16px;
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+    border: none;  
+  }
+
+  
+.dropup {
+    position: relative;
+    right: 20px;
+    width: 100px;
+    display: inline-block;
+}
+
+.dropup-content {
+    right: 0px;
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 160px;
+    bottom: 50px;
+    z-index: 1;
+}
+
+.dropup-content button {
+  color: black;
+
+  text-decoration: none;
+  display: block;
+}
+
+.dropup-content a:hover {background-color: #ccc}
+
+.dropup:hover .dropup-content {
+  display: block;
+}
+
+
 
 .grid{
     padding: 0px 10px 10px 10px;

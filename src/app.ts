@@ -40,7 +40,7 @@ const app = function(){
 
     document.getElementById('newGameBtn')?.addEventListener('click', NewGame)
     document.getElementById('changeSizeBtn')!.addEventListener('click', ChangeSize)
-    document.getElementById('test')!.addEventListener('click', SetSquareSize, false)
+    document.getElementById('squareSizeSlider')?.addEventListener('change', SetSquareSize)
     window.addEventListener('resize', SetSquareSize)
     bombCounter = document.getElementById('bombCounter')!
     timeCounter = document.getElementById('timeCounter')!
@@ -49,20 +49,18 @@ const app = function(){
 
 app();
 
-function SetSquareSize(){
+function SetSquareSize(event:Event){
     var grid = document.getElementById('grid')
-    var width = window.outerWidth * 0.8;
-    squareSize = width / columns;
-    if(squareSize > 30){
-        squareSize = 30;
-    }
+
+    squareSize = event.target.value
+
     grid!.setAttribute('style', 
         `grid-template-columns: repeat(${columns}, ${squareSize}px);
          grid-template-rows: repeat(${rows}, ${squareSize}px);`)
 
-    document.getElementById('root')!.style = 'font-size: 50px;'
-    document.body.style.fontSize = `50px`
-    console.log(document.getElementById('root'))
+    // document.getElementById('root')!.style = 'font-size: 50px;'
+    // document.body.style.fontSize = `50px`
+    // console.log(document.getElementById('root'))
 
 
 }
@@ -121,10 +119,11 @@ function SetSize(r:number, c:number, b:number){
     rows = r;
     columns = c;
     bombs = b;
-
+    var grid = document.getElementById('grid')
+    grid!.setAttribute('style', 
+        `grid-template-columns: repeat(${columns}, ${squareSize}px);
+         grid-template-rows: repeat(${rows}, ${squareSize}px);`)
     RestartGameInfo();
-    SetSquareSize()
-
 
     mapGrid = new Array(rows)
     for (let i = 0; i < rows; i++){
@@ -222,8 +221,7 @@ function MouseUp(event:MouseEvent){
                         })
                         temporaryShownFields = []
                     }
-                }
-            
+                }            
         }
 
         if (firstClick){

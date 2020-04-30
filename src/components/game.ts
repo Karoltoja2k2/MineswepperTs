@@ -7,11 +7,8 @@ const Game = () => {
                 <div class="counter">
                     <h1 id="bombCounter">091</h1>
                 </div>
-                <div class="midButtons">
+                <div class="counter">
                     <button id="newGameBtn">New game</button>
-                    <button id="changeSizeBtn">Change size</button>
-                    <button id="test">TEST</button>
-
                 </div>
                 <div class="counter">
                     <h1 id="timeCounter">012</h1>
@@ -22,8 +19,22 @@ const Game = () => {
             
             <div class="grid" id="grid">
             </div>
+
+            
         </div>  
-  
+        
+    </div>
+    <div class="settings">
+        <div class="dropup">
+            <button class="dropbtn">
+            </button>
+            <div class="dropup-content">
+                <button id="changeSizeBtn">Change size</button>
+                <input type="range" min="10" max="50" value="30" class="slider" id="squareSizeSlider">
+
+
+            </div>
+        </div>
     </div>
     `;
     return template;
