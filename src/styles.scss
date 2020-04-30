@@ -1,8 +1,18 @@
 * {
 	box-sizing: border-box;
 	margin: 0px;
-	padding: 0px;
+    padding: 0px;
 }
+
+button:focus {
+    outline:0;
+}
+
+.button:active {
+    background: #bdbdbd;
+    box-shadow: inset 1px 1px 1px #b3b3b3, 
+            inset -1px -1px 1px #cacaca;
+  }
 
 .root{
     width: 100%;
@@ -19,8 +29,6 @@
     align-items: center;
     justify-content: center;
 }
-
-
 
 .gameContainer{
     height: auto;
@@ -55,7 +63,7 @@
     }
 
     .counter{
-        margin: 0px 50px;
+        margin: 0px 10px;
         font-family: sans-serif;
         background: black;
         height: 40px;
@@ -71,40 +79,12 @@
     }
 }
 
-.grid1{
+.grid{
     padding: 0px 10px 10px 10px;
     display: grid;
 
     grid-template-columns: repeat(9, 32px);
     grid-template-rows: repeat(9, 32px);
-}
-
-.grid2{
-    padding: 0px 10px 10px 10px;
-    display: grid;
-    grid-template-columns: repeat(16, 22px);
-    grid-template-rows: repeat(16, 22px);
-}
-
-.grid3{
-    padding: 0px 10px 10px 10px;
-    display: grid;
-    grid-template-columns: repeat(30, 22px);
-    grid-template-rows: repeat(16, 22px);
-}
-
-.grid4{
-    padding: 0px 10px 10px 10px;
-    display: grid;
-    grid-template-columns: repeat(60, 22px);
-    grid-template-rows: repeat(38, 22px);
-}
-
-.grid5{
-    padding: 0px 10px 10px 10px;
-    display: grid;
-    grid-template-columns: repeat(60, 22px);
-    grid-template-rows: repeat(100, 22px);
 }
 
 .hidden{
@@ -116,8 +96,7 @@
 
 .shown{
     border: 0px;
-    font-weight: 700;
-    font-size: 20px;
+    // font-weight: 700;
 
     background: #bdbdbd;
     box-shadow: inset 1px 1px 1px #b3b3b3, 

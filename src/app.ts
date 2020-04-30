@@ -9,11 +9,23 @@ import Game from './components/game';
 let mapGrid: Field[][];
 let mapGenerator:MapGenerator;
 let firstClick = true;
+let gameOver = false;
+let run = false;
+let mouseDownField:Field;
+let lmbDown = false;
+let rmbDown = false;
 
-let rows = 9;
-let columns = 9;
-let bombs = 10;
-let chosenSize = 1;
+let rows = 0;
+let columns = 0;
+let bombs = 0;
+let chosenSize = 0;
+let squareSize = 32;
+
+let time;
+let bombsRemaining;
+let shownFieldsCount;
+let bombCounter:HTMLHeadElement;
+let timeCounter:HTMLHeadElement;
 
 const offset:Point[] = 
 [
@@ -24,30 +36,49 @@ const offset:Point[] =
 
 const app = function(){    
     
-    mapGrid = new Array(rows)
-    for (let i = 0; i < rows; i++){
-        mapGrid[i]=new Array(columns)
-    }
-
     document.getElementById('root')!.innerHTML = Game()
-    var grid = document.getElementById('grid')
-    grid?.setAttribute('class', `grid${chosenSize}`)
+
     document.getElementById('newGameBtn')?.addEventListener('click', NewGame)
     document.getElementById('changeSizeBtn')!.addEventListener('click', ChangeSize)
-
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < columns; j++) {
-            mapGrid[i][j] = new Field(i, j);
-            var btn:HTMLButtonElement = mapGrid[i][j].btn
-            btn.addEventListener('click', MouseClick)
-            btn.addEventListener('contextmenu', MouseClick)
-            grid!.append(btn)
-        }        
-    }        
-    mapGenerator = new MapGenerator(rows, columns, bombs)
+    document.getElementById('test')!.addEventListener('click', SetSquareSize, false)
+    window.addEventListener('resize', SetSquareSize)
+    bombCounter = document.getElementById('bombCounter')!
+    timeCounter = document.getElementById('timeCounter')!
+    ChangeSize();
 }
 
 app();
+
+function SetSquareSize(){
+    var grid = document.getElementById('grid')
+    var width = window.outerWidth * 0.8;
+    squareSize = width / columns;
+    if(squareSize > 30){
+        squareSize = 30;
+    }
+    grid!.setAttribute('style', 
+        `grid-template-columns: repeat(${columns}, ${squareSize}px);
+         grid-template-rows: repeat(${rows}, ${squareSize}px);`)
+
+    document.getElementById('root')!.style = 'font-size: 50px;'
+    document.body.style.fontSize = `50px`
+    console.log(document.getElementById('root'))
+
+
+}
+
+async function StartTimeCounter(){
+    time = 0;
+    var interval = setInterval(() => {
+        if(run){
+            time++;
+            updateCounters();  
+        } else {
+            clearInterval(interval);    
+        }
+      }, 1000);
+  };
+
 
 function ChangeSize(){
     if(chosenSize < 5){
@@ -55,8 +86,6 @@ function ChangeSize(){
     } else {
         chosenSize = 1
     }
-
-    console.log(chosenSize)
     
     switch(chosenSize){
         case 1:
@@ -75,6 +104,17 @@ function ChangeSize(){
             SetSize(100, 60, 999)
             return;
     }
+
+
+}
+
+function updateCounters(){
+    bombCounter.innerHTML = ("00" + `${bombsRemaining}`).slice(-3)
+    if (time < 1000){
+        timeCounter.innerHTML = ("00" + `${time}`).slice(-3);
+    } else {
+        timeCounter.innerHTML = "999";
+    }
 }
 
 function SetSize(r:number, c:number, b:number){
@@ -82,28 +122,138 @@ function SetSize(r:number, c:number, b:number){
     columns = c;
     bombs = b;
 
-    var grid = document.getElementById('grid')
-    grid?.setAttribute('class', `grid${chosenSize}`)
+    RestartGameInfo();
+    SetSquareSize()
+
 
     mapGrid = new Array(rows)
     for (let i = 0; i < rows; i++){
         mapGrid[i]=new Array(columns)
     }
 
+    console.log(mapGrid)
+    grid!.innerHTML = ''
     for (let i = 0; i < rows; i++) {
         for (let j = 0; j < columns; j++) {
             mapGrid[i][j] = new Field(i, j);
             var btn:HTMLButtonElement = mapGrid[i][j].btn
-            btn.addEventListener('click', MouseClick)
-            btn.addEventListener('contextmenu', MouseClick)
+            btn.addEventListener('mousedown', MouseDown)
+            btn.addEventListener('mouseup', MouseUp)
+            btn.addEventListener('contextmenu', ContextMenu)
             grid!.append(btn)
         }        
     }        
     mapGenerator = new MapGenerator(rows, columns, bombs)
 }
 
-function NewGame(){
+function ContextMenu(event:MouseEvent){
+    event.preventDefault()
+}
+
+
+let temporaryShownFields:Field[] = [];
+function MouseDown(event:MouseEvent){
+    event.preventDefault()
+    if(gameOver){
+        return;
+    }
+    console.log(lmbDown)
+    console.log(rmbDown)
+    if (lmbDown || rmbDown){
+        return;
+    }
+
+    var btn = event.target as Element
+    var cords = btn.attributes[0].value.split('-')
+    var row = parseInt(cords[0])
+    var col = parseInt(cords[1])
+    mouseDownField = mapGrid[row][col];
+    if(event.button == 0){
+        lmbDown = true;
+        if(!mouseDownField.isFlag && mouseDownField.isHidden){
+            mouseDownField.btn.setAttribute('class', 'shown')
+        } else if (!mouseDownField.isHidden && !mouseDownField.isFlag) {
+            offset.forEach(function(offpoint){
+                var tempPoint = mouseDownField.pnt.Add_Point(offpoint)
+                if (tempPoint.Inside_Boundries(rows, columns)){
+                    var tempField:Field = mapGrid[tempPoint.row][tempPoint.col]
+                    if (tempField.isHidden && !tempField.isFlag){
+                        tempField.btn.setAttribute('class', 'shown')
+                        temporaryShownFields.push(tempField);
+                    }
+                }
+
+            })
+        } 
+    } else if (event.button == 2) {
+        rmbDown = true;
+        if(mouseDownField.isHidden){
+            RmbClick(mouseDownField);
+        }
+    }
+
+}
+
+function MouseUp(event:MouseEvent){
+    event.preventDefault()
+    if (gameOver == true){
+        return;
+    }
+    if (event.button == 2){
+        rmbDown = false;
+    }
+
+    if (event.button == 0){
+        lmbDown = false
+        var btn = event.target as Element
+        var cords = btn.attributes[0].value.split('-')
+        var row = parseInt(cords[0])
+        var col = parseInt(cords[1])
+        var clickedField = mapGrid[row][col];
+
+        if (clickedField.pnt != mouseDownField.pnt){
+            if (mouseDownField.isHidden && !mouseDownField.isFlag){
+                mouseDownField.btn.setAttribute('class', 'hidden')
+                return;              
+            } else if (!mouseDownField.isHidden && !mouseDownField.isFlag){
+                    if (temporaryShownFields.length != 0){
+                        temporaryShownFields.forEach(function(field){
+                            field.btn.setAttribute('class', 'hidden')
+                        })
+                        temporaryShownFields = []
+                    }
+                }
+            
+        }
+
+        if (firstClick){
+            FirstClickEvent()
+        }
+
+        if(clickedField.isHidden && !clickedField.isFlag){
+            LmbClickHidden(clickedField);
+            // mouseDownField.btn.removeEventListener('mouseleave', MouseLeave)
+        } else if (!clickedField.isHidden) {
+            LmbClickShown(clickedField);
+
+        }
+
+    }
+}
+
+
+function RestartGameInfo(){
     firstClick = true;
+    run = false;
+    gameOver = false;
+    bombsRemaining = bombs;
+    time = 0;
+    shownFieldsCount = 0;
+    updateCounters()
+}
+
+function NewGame(){    
+    RestartGameInfo()
     for (let i = 0; i < rows; i++) {
         for (let j = 0; j < columns; j++) {
             mapGrid[i][j].RestartField();            
@@ -111,34 +261,13 @@ function NewGame(){
     }    
 }
 
-
-export function MouseClick(event:MouseEvent){
-    event.preventDefault()
-
-    var btn = event.target as Element
-    var cords = btn.attributes[0].value.split('-')
-    var row = parseInt(cords[0])
-    var col = parseInt(cords[1])
-
-    if (firstClick){
-        firstClick = false;
-        mapGrid = mapGenerator.GenerateMap(new Point(row, col), mapGrid)
-    }
-
-    var lmb = event.button == 0 ? true : false;
-    var clickedField:Field = mapGrid[row][col]
-
-    if(lmb){
-        if(clickedField.isHidden == true && clickedField.isFlag == false){
-            LmbClickHidden(clickedField);
-        } else {
-            LmbClickShown(clickedField)
-        }
-    } else {
-        RmbClick(clickedField)
-    }
-
+function FirstClickEvent(){
+    firstClick = false;
+    run = true;
+    mapGrid = mapGenerator.GenerateMap(mouseDownField.pnt, mapGrid)
+    StartTimeCounter();
 }
+
 
 const colors:string[] = ['lightgray', 'darkcyan', 'green', 'darkred', 'darkslateblue', 'brown', 'seagreen', 'orange', 'black']
 
@@ -159,6 +288,8 @@ function LmbClickHidden(clickedField:Field){
     clickedField.btn.setAttribute('style', `color: ${colors[clickedField.nBombs]};`)
     clickedField.btn.setAttribute('class', 'shown')
 
+    shownFieldsCount++;
+
     if (clickedField.nBombs == 0){
         offset.forEach(function(offPoint){
             var tempPoint = clickedField.pnt.Add_Point(offPoint)
@@ -169,6 +300,11 @@ function LmbClickHidden(clickedField:Field){
                 }
             }
         })
+    }
+
+    if (shownFieldsCount == columns * rows - bombs)
+    {
+        GameOver(true);
     }
 }
 
@@ -198,19 +334,38 @@ function LmbClickShown(clickedField:Field){
                 LmbClickHidden(fTC)
             }
         })
+    } else {
+        console.log(temporaryShownFields)
+        if (temporaryShownFields.length != 0){
+            temporaryShownFields.forEach(function(field){
+                field.btn.setAttribute('class', 'hidden')
+            })
+        }
     }
+    temporaryShownFields = []
+
 }
 
 export function RmbClick(clickedField:Field){
     if(clickedField.isHidden){
+        if (firstClick){
+            FirstClickEvent()
+        }
+
         clickedField.isFlag = !clickedField.isFlag;
+        bombsRemaining += clickedField.isFlag ? -1 : 1
+        updateCounters()
         var className = clickedField.isFlag ? 'flagged' : 'hidden'
         clickedField.btn.setAttribute('class', className)
     }
 }
 
 function GameOver(succes:boolean){
-    NewGame();
+    gameOver = true;
+    run = false;
+    console.log(`Win - ${succes}`);
+    console.log(`Time - ${time}`);
+
 }
 
 
