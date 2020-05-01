@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "karma-browserify": "^7.0.0",
     "sass": "^1.26.5",
     "typescript": "^3.8.3"
   }
