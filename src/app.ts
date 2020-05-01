@@ -26,6 +26,8 @@ let bombsRemaining;
 let shownFieldsCount;
 let bombCounter:HTMLHeadElement;
 let timeCounter:HTMLHeadElement;
+let slider:HTMLInputElement;
+
 
 const offset:Point[] = 
 [
@@ -50,8 +52,9 @@ const app = function(){
         nameInput.value = nick        
     }
 
-
-    document.getElementById('squareSizeSlider')?.addEventListener('input', SetSquareSize)
+    slider = document.getElementById('squareSizeSlider')
+    console.log(slider)
+    slider.addEventListener('input', SetSquareSize)
     bombCounter = document.getElementById('bombCounter')!
     timeCounter = document.getElementById('timeCounter')!
     SetLevel();
@@ -70,7 +73,6 @@ function SetNickname(event:InputEvent){
 
 
 function SettingsWindowOpener(event){
-    console.log('asd')
 
     if (settingsOpen){
         document.getElementById('dropdown-content')?.setAttribute('style', 'display: none;')
@@ -81,17 +83,15 @@ function SettingsWindowOpener(event){
     }
 }
 
-
 function SetSquareSize(event:InputEvent = null){
-    console.log(event)
+    squareSize = slider?.value
+    if(squareSize * columns + 10 < 236){        
+        squareSize = 226 / columns;
+        if(event){
+            return;
+        }
+    }
 
-    if(event != null){
-        squareSize = event.target.value
-    }
-    
-    if(squareSize * columns + 10 < 236){
-        return;
-    }
     var grid = document.getElementById('grid')
     grid!.setAttribute('style', 
         `grid-template-columns: repeat(${columns}, ${squareSize}px);
@@ -113,8 +113,6 @@ async function StartTimeCounter(){
 
 
 function SetLevel(){
-    console.log('asd')
-
     if(chosenSize < 5){
         chosenSize++;
     } else {
@@ -155,7 +153,6 @@ function SetSize(r:number, c:number, b:number){
     rows = r;
     columns = c;
     bombs = b;
-    console.log('asd')
 
     SetSquareSize();
     RestartGameInfo();
