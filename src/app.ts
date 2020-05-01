@@ -39,30 +39,64 @@ const app = function(){
     document.getElementById('root')!.innerHTML = Game()
 
     document.getElementById('newGameBtn')?.addEventListener('click', NewGame)
-    document.getElementById('changeSizeBtn')!.addEventListener('click', ChangeSize)
-    document.getElementById('squareSizeSlider')?.addEventListener('change', SetSquareSize)
-    window.addEventListener('resize', SetSquareSize)
+    document.getElementById('changeSizeBtn')!.addEventListener('click', SetLevel)
+    document.getElementById('settingBtn')?.addEventListener('click', SettingsWindowOpener)
+    document.getElementById('dropdown-content')?.addEventListener('mouseleave', SettingsWindowOpener)
+
+    var nameInput = document.getElementById('nameInput')
+    nameInput.addEventListener('input', SetNickname)
+    var nick = window.localStorage.getItem('name')
+    if (nick != null && nick.trim().length != 0){
+        nameInput.value = nick        
+    }
+
+
+    document.getElementById('squareSizeSlider')?.addEventListener('input', SetSquareSize)
     bombCounter = document.getElementById('bombCounter')!
     timeCounter = document.getElementById('timeCounter')!
-    ChangeSize();
+    SetLevel();
 }
-
 app();
 
-function SetSquareSize(event:Event){
+let settingsOpen = false;
+
+function SetNickname(event:InputEvent){
+    var nick = event.target.value;
+    if (nick.length < 50){
+        window.localStorage.setItem('name', `${event.target.value}`)
+    }
+    console.log(window.localStorage.getItem('name'))
+}
+
+
+function SettingsWindowOpener(event){
+    console.log('asd')
+
+    if (settingsOpen){
+        document.getElementById('dropdown-content')?.setAttribute('style', 'display: none;')
+        settingsOpen = !settingsOpen;
+    } else {
+        document.getElementById('dropdown-content')?.setAttribute('style', 'display: flex;')
+        settingsOpen = !settingsOpen;
+    }
+}
+
+
+function SetSquareSize(event:InputEvent = null){
+    console.log(event)
+
+    if(event != null){
+        squareSize = event.target.value
+    }
+    
+    if(squareSize * columns + 10 < 236){
+        return;
+    }
     var grid = document.getElementById('grid')
-
-    squareSize = event.target.value
-
     grid!.setAttribute('style', 
         `grid-template-columns: repeat(${columns}, ${squareSize}px);
-         grid-template-rows: repeat(${rows}, ${squareSize}px);`)
-
-    // document.getElementById('root')!.style = 'font-size: 50px;'
-    // document.body.style.fontSize = `50px`
-    // console.log(document.getElementById('root'))
-
-
+         grid-template-rows: repeat(${rows}, ${squareSize}px);
+         font-size: ${squareSize - 2}px`)
 }
 
 async function StartTimeCounter(){
@@ -78,7 +112,9 @@ async function StartTimeCounter(){
   };
 
 
-function ChangeSize(){
+function SetLevel(){
+    console.log('asd')
+
     if(chosenSize < 5){
         chosenSize++;
     } else {
@@ -119,10 +155,9 @@ function SetSize(r:number, c:number, b:number){
     rows = r;
     columns = c;
     bombs = b;
-    var grid = document.getElementById('grid')
-    grid!.setAttribute('style', 
-        `grid-template-columns: repeat(${columns}, ${squareSize}px);
-         grid-template-rows: repeat(${rows}, ${squareSize}px);`)
+    console.log('asd')
+
+    SetSquareSize();
     RestartGameInfo();
 
     mapGrid = new Array(rows)
