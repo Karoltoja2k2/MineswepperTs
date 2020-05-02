@@ -1,8 +1,0 @@
-{
-  "devDependencies": {
-    "karma-browserify": "^7.0.0",
-    "nodemon": "^2.0.3",
-    "sass": "^1.26.5",
-    "typescript": "^3.8.3"
-  }
-}
