@@ -3,7 +3,6 @@ import { Field } from './objects/Field'
 import { MapGenerator } from './objects/MapGenerator';
 
 import './styles.scss'
-import Grid from './components/grid';
 import Game from './components/game';
 
 let mapGrid: Field[][];
