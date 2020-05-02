@@ -246,9 +246,7 @@ function () {
         }
       });
     });
-    console.log(updatedMap);
-    console.log(map);
-    return updatedMap;
+    return [updatedMap, chosenBombs];
   };
 
   MapGenerator.prototype.GenerateBombCord = function (bombCords) {
@@ -366,7 +364,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var Game = function Game() {
-  var template = "\n    <div class=\"background\">\n        <div class=\"gameContainer\" id=\"gameContainer\">\n            <div class=\"menu\">\n                <div class=\"counter\">\n                    <h1 id=\"bombCounter\">091</h1>\n                </div>\n                <div>\n                    <button class=\"uibtn\" id=\"newGameBtn\"> \n                        <span class=\"material-icons\" style=\"font-size:36px;\">\n                            fiber_new\n                        </span>\n                    </button> \n                    <button class=\"uibtn\" id=\"settingBtn\">\n                        <span class=\"material-icons\" style=\"font-size:36px;\">\n                            settings\n                        </span>\n                    </button>\n                </div>\n                <div class=\"counter\">\n                    <h1 id=\"timeCounter\">012</h1>\n                </div>\n            </div>\n            \n            <div class=\"grid\" id=\"grid\">\n            </div>\n            \n        </div>  \n\n        <div class=\"dropdown-content\" id=\"dropdown-content\">\n            <div class=\"bg\">\n            </div>\n\n\n            <h1>Mineswepper</h1>\n            <button id=\"changeSizeBtn\">Change size</button>\n            <input type=\"range\" min=\"10\" max=\"50\" value=\"30\" class=\"slider rangeInput\" id=\"squareSizeSlider\">\n            <label for\"nameInput\">Nickname</label>\n            <input class=\"nameInput\" type=\"text\" id=\"nameInput\">\n            </div>\n        \n    </div>\n    ";
+  var template = "\n    <div class=\"background\" id=\"background\">\n        <div class=\"gameContainer\" id=\"gameContainer\">\n            <div class=\"menu\">\n                <div class=\"counter\">\n                    <h1 id=\"bombCounter\">091</h1>\n                </div>\n                <button class=\"newgamebtn\" id=\"newGameBtn\"> \n                    <span class=\"material-icons\" style=\"font-size:36px;\">\n                        fiber_new\n                    </span>\n                </button>                     \n                <div class=\"counter\">\n                    <h1 id=\"timeCounter\">012</h1>\n                </div>\n            </div>\n            \n            <div class=\"grid\" id=\"grid\">\n            </div>            \n        </div> \n        \n        <button class=\"settingsbtn\" id=\"settingsBtn\">\n            <span class=\"material-icons\" style=\"font-size:36px;\">\n                settings\n            </span>\n        </button>\n\n        <div class=\"dropdown-content\" id=\"dropdown-content\">\n            <div class=\"bg\">\n            </div>\n            <h1>Mineswepper</h1>\n            <button id=\"changeSizeBtn\">Change size</button>\n            <input type=\"range\" min=\"10\" max=\"50\" value=\"30\" class=\"slider rangeInput\" id=\"squareSizeSlider\">\n            <label for\"nameInput\">Nickname</label>\n            <input class=\"nameInput\" type=\"text\" id=\"nameInput\">\n            </div>\n        \n    </div>\n    ";
   return template;
 };
 
@@ -538,9 +536,12 @@ require("./styles.scss");
 var game_1 = __importDefault(require("./components/game"));
 
 var mapGrid;
+var temporaryShownFields = [];
+var bombPoints;
 var mapGenerator;
 var firstClick = true;
 var gameOver = false;
+var showBombs = false;
 var run = false;
 var mouseDownField;
 var lmbDown = false;
@@ -548,7 +549,7 @@ var rmbDown = false;
 var rows = 0;
 var columns = 0;
 var bombs = 0;
-var chosenSize = 0;
+var chosenLevel = 0;
 var squareSize = 32;
 var time;
 var bombsRemaining;
@@ -556,16 +557,29 @@ var shownFieldsCount;
 var bombCounter;
 var timeCounter;
 var slider;
+var settingsBtn;
+var settingsOpen = false;
+var numberColors = ['lightgray', 'darkcyan', 'green', 'darkred', 'darkslateblue', 'brown', 'seagreen', 'orange', 'black'];
+var backGroundColors = ['#126748', '#c3df47', '#f1ce5a', '#f1a35a', '#f16c5a'];
 var offset = [new Point_1.Point(-1, -1), new Point_1.Point(-1, 0), new Point_1.Point(-1, 1), new Point_1.Point(0, -1), new Point_1.Point(0, 1), new Point_1.Point(1, -1), new Point_1.Point(1, 0), new Point_1.Point(1, 1)];
 
 var app = function app() {
-  var _a, _b, _c;
-
   document.getElementById('root').innerHTML = game_1.default();
+  SetEventListeners();
+  SetLevel();
+};
+
+app();
+
+function SetEventListeners() {
+  var _a, _b;
+
   (_a = document.getElementById('newGameBtn')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', NewGame);
   document.getElementById('changeSizeBtn').addEventListener('click', SetLevel);
-  (_b = document.getElementById('settingBtn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', SettingsWindowOpener);
-  (_c = document.getElementById('dropdown-content')) === null || _c === void 0 ? void 0 : _c.addEventListener('mouseleave', SettingsWindowOpener);
+  settingsBtn = document.getElementById('settingsBtn');
+  settingsBtn.addEventListener('mouseenter', SettingsWindowOpener);
+  SettingsWindowOpener();
+  (_b = document.getElementById('dropdown-content')) === null || _b === void 0 ? void 0 : _b.addEventListener('mouseleave', SettingsWindowOpener);
   var nameInput = document.getElementById('nameInput');
   nameInput.addEventListener('input', SetNickname);
   var nick = window.localStorage.getItem('name');
@@ -575,55 +589,140 @@ var app = function app() {
   }
 
   slider = document.getElementById('squareSizeSlider');
-  console.log(slider);
   slider.addEventListener('input', SetSquareSize);
   bombCounter = document.getElementById('bombCounter');
   timeCounter = document.getElementById('timeCounter');
-  SetLevel();
-};
-
-app();
-var settingsOpen = false;
-
-function SetNickname(event) {
-  var nick = event.target.value;
-
-  if (nick.length < 50) {
-    window.localStorage.setItem('name', "" + event.target.value);
-  }
-
-  console.log(window.localStorage.getItem('name'));
 }
 
-function SettingsWindowOpener(event) {
-  var _a, _b;
+function SetLevel() {
+  var _a;
 
-  if (settingsOpen) {
-    (_a = document.getElementById('dropdown-content')) === null || _a === void 0 ? void 0 : _a.setAttribute('style', 'display: none;');
-    settingsOpen = !settingsOpen;
+  if (chosenLevel < 5) {
+    chosenLevel++;
   } else {
-    (_b = document.getElementById('dropdown-content')) === null || _b === void 0 ? void 0 : _b.setAttribute('style', 'display: flex;');
-    settingsOpen = !settingsOpen;
+    chosenLevel = 1;
+  }
+
+  (_a = document.getElementById('background')) === null || _a === void 0 ? void 0 : _a.style.background = backGroundColors[chosenLevel - 1];
+
+  switch (chosenLevel) {
+    case 1:
+      SetSize(9, 9, 10);
+      return;
+
+    case 2:
+      SetSize(16, 16, 40);
+      return;
+
+    case 3:
+      SetSize(16, 30, 99);
+      return;
+
+    case 4:
+      SetSize(16, 30, 200);
+      return;
+
+    case 5:
+      SetSize(32, 60, 500);
+      return;
   }
 }
 
-function SetSquareSize(event) {
-  if (event === void 0) {
-    event = null;
+function SetSize(r, c, b) {
+  return __awaiter(this, void 0, void 0, function () {
+    var i, i, j, btn;
+    return __generator(this, function (_a) {
+      rows = r;
+      columns = c;
+      bombs = b;
+      SetSquareSize();
+      RestartGameInfo();
+      mapGrid = new Array(rows);
+
+      for (i = 0; i < rows; i++) {
+        mapGrid[i] = new Array(columns);
+      }
+
+      grid.innerHTML = '';
+
+      for (i = 0; i < rows; i++) {
+        for (j = 0; j < columns; j++) {
+          mapGrid[i][j] = new Field_1.Field(i, j);
+          btn = mapGrid[i][j].btn;
+          btn.addEventListener('mousedown', MouseDown);
+          btn.addEventListener('mouseup', MouseUp);
+          btn.addEventListener('contextmenu', ContextMenu);
+          grid.append(btn);
+        }
+      }
+
+      mapGenerator = new MapGenerator_1.MapGenerator(rows, columns, bombs);
+      return [2
+      /*return*/
+      ];
+    });
+  });
+}
+
+function RestartGameInfo() {
+  firstClick = true;
+  run = false;
+  gameOver = false;
+  showBombs = false;
+  bombsRemaining = bombs;
+  time = 0;
+  shownFieldsCount = 0;
+  updateCounters();
+}
+
+function NewGame() {
+  RestartGameInfo();
+
+  if (!settingsOpen) {
+    settingsBtn.style.display = 'block';
   }
 
-  squareSize = slider === null || slider === void 0 ? void 0 : slider.value;
-
-  if (squareSize * columns + 10 < 236) {
-    squareSize = 226 / columns;
-
-    if (event) {
-      return;
+  for (var i = 0; i < rows; i++) {
+    for (var j = 0; j < columns; j++) {
+      mapGrid[i][j].RestartField();
     }
   }
+}
 
-  var grid = document.getElementById('grid');
-  grid.setAttribute('style', "grid-template-columns: repeat(" + columns + ", " + squareSize + "px);\n         grid-template-rows: repeat(" + rows + ", " + squareSize + "px);\n         font-size: " + (squareSize - 2) + "px");
+function FirstClickEvent() {
+  var _a;
+
+  firstClick = false;
+  run = true;
+  _a = mapGenerator.GenerateMap(mouseDownField.pnt, mapGrid), mapGrid = _a[0], bombPoints = _a[1];
+  settingsBtn.style.display = 'none';
+  StartTimeCounter();
+}
+
+function GameOver(succes) {
+  if (!settingsOpen) {
+    settingsBtn.style.display = 'block';
+  }
+
+  gameOver = true;
+  run = false;
+  showBombs = true;
+  var style = succes ? 'bomb-defused' : 'bomb';
+  ShowAllBombs(style);
+}
+
+function ShowAllBombs(style) {
+  var i = 0;
+  var interval2 = setInterval(function () {
+    if (showBombs == false || i >= bombPoints.length) {
+      clearInterval(interval2);
+    } else {
+      var point = bombPoints[i];
+      mapGrid[point.row][point.col].btn.setAttribute('class', style);
+      console.log(i);
+      i++;
+    }
+  }, 1);
 }
 
 function StartTimeCounter() {
@@ -648,38 +747,16 @@ function StartTimeCounter() {
 
 ;
 
-function SetLevel() {
-  if (chosenSize < 5) {
-    chosenSize++;
-  } else {
-    chosenSize = 1;
-  }
-
-  switch (chosenSize) {
-    case 1:
-      SetSize(9, 9, 10);
-      return;
-
-    case 2:
-      SetSize(16, 16, 40);
-      return;
-
-    case 3:
-      SetSize(16, 30, 99);
-      return;
-
-    case 4:
-      SetSize(38, 60, 500);
-      return;
-
-    case 5:
-      SetSize(100, 60, 999);
-      return;
-  }
-}
-
 function updateCounters() {
-  bombCounter.innerHTML = ("00" + ("" + bombsRemaining)).slice(-3);
+  if (bombsRemaining < 0 && bombsRemaining > -10) {
+    bombCounter.innerHTML = "-0" + ("" + bombsRemaining * -1);
+  } else if (bombsRemaining <= -10) {
+    bombCounter.innerHTML = "-" + ("" + bombsRemaining * -1);
+  } else if (bombsRemaining < -99) {
+    bombCounter.innerHTML = "-99";
+  } else if (bombsRemaining >= 0) {
+    bombCounter.innerHTML = ("00" + ("" + bombsRemaining)).slice(-3);
+  }
 
   if (time < 1000) {
     timeCounter.innerHTML = ("00" + ("" + time)).slice(-3);
@@ -688,40 +765,59 @@ function updateCounters() {
   }
 }
 
-function SetSize(r, c, b) {
-  rows = r;
-  columns = c;
-  bombs = b;
-  SetSquareSize();
-  RestartGameInfo();
-  mapGrid = new Array(rows);
+function SetNickname(event) {
+  var nick = event.target.value;
 
-  for (var i = 0; i < rows; i++) {
-    mapGrid[i] = new Array(columns);
+  if (nick.length < 50) {
+    window.localStorage.setItem('name', "" + event.target.value);
   }
 
-  console.log(mapGrid);
-  grid.innerHTML = '';
+  console.log(window.localStorage.getItem('name'));
+}
 
-  for (var i = 0; i < rows; i++) {
-    for (var j = 0; j < columns; j++) {
-      mapGrid[i][j] = new Field_1.Field(i, j);
-      var btn = mapGrid[i][j].btn;
-      btn.addEventListener('mousedown', MouseDown);
-      btn.addEventListener('mouseup', MouseUp);
-      btn.addEventListener('contextmenu', ContextMenu);
-      grid.append(btn);
+function SettingsWindowOpener(event) {
+  var _a, _b;
+
+  if (!settingsOpen) {
+    (_a = document.getElementById('dropdown-content')) === null || _a === void 0 ? void 0 : _a.setAttribute('style', 'display: flex;');
+    settingsBtn.style.display = 'none';
+    settingsOpen = !settingsOpen;
+  } else {
+    (_b = document.getElementById('dropdown-content')) === null || _b === void 0 ? void 0 : _b.setAttribute('style', 'display: none;');
+    settingsBtn.style.display = 'block';
+    settingsOpen = !settingsOpen;
+  }
+}
+
+function SetSquareSize(event) {
+  if (event === void 0) {
+    event = null;
+  }
+
+  squareSize = slider === null || slider === void 0 ? void 0 : slider.value;
+
+  if (squareSize * columns + 10 < 236) {
+    squareSize = 226 / columns;
+
+    if (event) {
+      return;
+    }
+  } else if (squareSize * columns + 20 > window.innerWidth) {
+    squareSize = Math.floor((window.innerWidth - 20) / columns);
+
+    if (event) {
+      return;
     }
   }
 
-  mapGenerator = new MapGenerator_1.MapGenerator(rows, columns, bombs);
-}
+  var grid = document.getElementById('grid');
+  grid.setAttribute('style', "grid-template-columns: repeat(" + columns + ", " + squareSize + "px);\n         grid-template-rows: repeat(" + rows + ", " + squareSize + "px);\n         font-size: " + (squareSize - 2) + "px");
+} // MOUSE EVENT HANDLERS AND CLICK METHODS
+
 
 function ContextMenu(event) {
   event.preventDefault();
 }
-
-var temporaryShownFields = [];
 
 function MouseDown(event) {
   event.preventDefault();
@@ -729,9 +825,6 @@ function MouseDown(event) {
   if (gameOver) {
     return;
   }
-
-  console.log(lmbDown);
-  console.log(rmbDown);
 
   if (lmbDown || rmbDown) {
     return;
@@ -816,74 +909,6 @@ function MouseUp(event) {
   }
 }
 
-function RestartGameInfo() {
-  firstClick = true;
-  run = false;
-  gameOver = false;
-  bombsRemaining = bombs;
-  time = 0;
-  shownFieldsCount = 0;
-  updateCounters();
-}
-
-function NewGame() {
-  RestartGameInfo();
-
-  for (var i = 0; i < rows; i++) {
-    for (var j = 0; j < columns; j++) {
-      mapGrid[i][j].RestartField();
-    }
-  }
-}
-
-function FirstClickEvent() {
-  firstClick = false;
-  run = true;
-  mapGrid = mapGenerator.GenerateMap(mouseDownField.pnt, mapGrid);
-  StartTimeCounter();
-}
-
-var colors = ['lightgray', 'darkcyan', 'green', 'darkred', 'darkslateblue', 'brown', 'seagreen', 'orange', 'black'];
-
-function LmbClickHidden(clickedField) {
-  var btn = clickedField.btn;
-
-  if (clickedField.isBomb) {
-    btn.innerHTML = 'B';
-    btn.setAttribute('class', 'bomb');
-    GameOver(false);
-    return;
-  }
-
-  if (clickedField.isFlag) {
-    return;
-  }
-
-  clickedField.isHidden = false;
-  clickedField.btn.innerHTML = clickedField.nBombs == 0 ? "" : "" + clickedField.nBombs;
-  clickedField.btn.setAttribute('style', "color: " + colors[clickedField.nBombs] + ";");
-  clickedField.btn.setAttribute('class', 'shown');
-  shownFieldsCount++;
-
-  if (clickedField.nBombs == 0) {
-    offset.forEach(function (offPoint) {
-      var tempPoint = clickedField.pnt.Add_Point(offPoint);
-
-      if (tempPoint.Inside_Boundries(rows, columns)) {
-        var tempField = mapGrid[tempPoint.row][tempPoint.col];
-
-        if (tempField.isHidden == true && tempField.isFlag == false) {
-          LmbClickHidden(tempField);
-        }
-      }
-    });
-  }
-
-  if (shownFieldsCount == columns * rows - bombs) {
-    GameOver(true);
-  }
-}
-
 function LmbClickShown(clickedField) {
   var nearBombs = clickedField.nBombs;
   var flaggedFields = 0;
@@ -923,6 +948,44 @@ function LmbClickShown(clickedField) {
   temporaryShownFields = [];
 }
 
+function LmbClickHidden(clickedField) {
+  var btn = clickedField.btn;
+
+  if (clickedField.isBomb) {
+    btn.setAttribute('class', 'bomb');
+    GameOver(false);
+    return;
+  }
+
+  if (clickedField.isFlag) {
+    return;
+  }
+
+  clickedField.isHidden = false;
+  clickedField.btn.innerHTML = clickedField.nBombs == 0 ? "" : "" + clickedField.nBombs;
+  clickedField.btn.setAttribute('style', "color: " + numberColors[clickedField.nBombs] + ";");
+  clickedField.btn.setAttribute('class', 'shown');
+  shownFieldsCount++;
+
+  if (clickedField.nBombs == 0) {
+    offset.forEach(function (offPoint) {
+      var tempPoint = clickedField.pnt.Add_Point(offPoint);
+
+      if (tempPoint.Inside_Boundries(rows, columns)) {
+        var tempField = mapGrid[tempPoint.row][tempPoint.col];
+
+        if (tempField.isHidden == true && tempField.isFlag == false) {
+          LmbClickHidden(tempField);
+        }
+      }
+    });
+  }
+
+  if (shownFieldsCount == columns * rows - bombs) {
+    GameOver(true);
+  }
+}
+
 function RmbClick(clickedField) {
   if (clickedField.isHidden) {
     if (firstClick) {
@@ -935,15 +998,6 @@ function RmbClick(clickedField) {
     var className = clickedField.isFlag ? 'flagged' : 'hidden';
     clickedField.btn.setAttribute('class', className);
   }
-}
-
-exports.RmbClick = RmbClick;
-
-function GameOver(succes) {
-  gameOver = true;
-  run = false;
-  console.log("Win - " + succes);
-  console.log("Time - " + time);
 }
 },{"./objects/Point":"src/objects/Point.ts","./objects/Field":"src/objects/Field.ts","./objects/MapGenerator":"src/objects/MapGenerator.ts","./styles.scss":"src/styles.scss","./components/game":"src/components/game.ts"}],"../../../AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -973,7 +1027,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56084" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58523" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
