@@ -24,18 +24,20 @@ let bombs = 0;
 let chosenLevel = 0;
 let squareSize = 32;
 
-let time;
-let bombsRemaining;
-let shownFieldsCount;
-let bombCounter:HTMLHeadElement;
-let timeCounter:HTMLHeadElement;
+let time:number;
+let bombsRemaining:number;
+let shownFieldsCount:number;
+let bombCounter:HTMLElement;
+let timeCounter:HTMLElement;
 
+let background:HTMLElement;
+let grid:HTMLElement;
 let slider:HTMLInputElement;
-let settingsBtn:HTMLButtonElement;
+let settingsBtn:HTMLElement;
 let settingsOpen = false;
 
 const numberColors:string[] = ['lightgray', 'darkcyan', 'green', 'darkred', 'darkslateblue', 'brown', 'seagreen', 'orange', 'black']
-const backGroundColors:string[] = ['#126748', '#c3df47', '#f1ce5a', '#f1a35a', '#f16c5a'],
+const backGroundColors:string[] = ['#126748', '#c3df47', '#f1ce5a', '#f1a35a', '#f16c5a']
 
 
 const offset:Point[] = 
@@ -53,20 +55,22 @@ const app = function(){
 app();
 
 function SetEventListeners(){
+    grid = document.getElementById('grid')!
+    background = document.getElementById('background')!
     document.getElementById('newGameBtn')?.addEventListener('click', NewGame)
     document.getElementById('changeSizeBtn')!.addEventListener('click', SetLevel)
-    settingsBtn = document.getElementById('settingsBtn')
+    settingsBtn = document.getElementById('settingsBtn')!
     settingsBtn.addEventListener('mouseenter', SettingsWindowOpener)
     SettingsWindowOpener()
     document.getElementById('dropdown-content')?.addEventListener('mouseleave', SettingsWindowOpener)
 
-    var nameInput = document.getElementById('nameInput')
-    nameInput.addEventListener('input', SetNickname)
+    var nameInput = document.getElementById('nameInput')! as HTMLInputElement
+    nameInput.addEventListener('input', e => {SetNickname})
     var nick = window.localStorage.getItem('name')
     if (nick != null && nick.trim().length != 0){
         nameInput.value = nick
     }
-    slider = document.getElementById('squareSizeSlider')
+    slider = document.getElementById('squareSizeSlider')! as HTMLInputElement
     slider.addEventListener('input', SetSquareSize)
     bombCounter = document.getElementById('bombCounter')!
     timeCounter = document.getElementById('timeCounter')!
@@ -78,7 +82,7 @@ function SetLevel(){
     } else {
         chosenLevel = 1
     }     
-    document.getElementById('background')?.style.background = backGroundColors[chosenLevel - 1]; 
+    background.style.background = backGroundColors[chosenLevel - 1]; 
     switch(chosenLevel){
         case 1:
             SetSize(9, 9, 10)
@@ -98,7 +102,7 @@ function SetLevel(){
     }
 }
 
-async function SetSize(r:number, c:number, b:number){
+function SetSize(r:number, c:number, b:number){
     rows = r;
     columns = c;
     bombs = b;
@@ -108,7 +112,7 @@ async function SetSize(r:number, c:number, b:number){
     for (let i = 0; i < rows; i++){
         mapGrid[i]=new Array(columns)
     }
-    grid!.innerHTML = ''
+    grid.innerHTML = ''
     for (let i = 0; i < rows; i++) {
         for (let j = 0; j < columns; j++) {
             mapGrid[i][j] = new Field(i, j);
@@ -116,7 +120,7 @@ async function SetSize(r:number, c:number, b:number){
             btn.addEventListener('mousedown', MouseDown)
             btn.addEventListener('mouseup', MouseUp)
             btn.addEventListener('contextmenu', ContextMenu)
-            grid!.append(btn)
+            grid.append(btn)
         }        
     }        
     mapGenerator = new MapGenerator(rows, columns, bombs)
@@ -165,7 +169,7 @@ function GameOver(succes:boolean){
     ShowAllBombs(style)
 }
 
-function ShowAllBombs(style){
+function ShowAllBombs(style:string){
     var i = 0;
     var interval2 = setInterval(() => {
         if(showBombs == false || i >= bombPoints.length){
@@ -180,7 +184,7 @@ function ShowAllBombs(style){
     }, 1);
 }
 
-async function StartTimeCounter(){
+function StartTimeCounter(){
     time = 0;
     var interval = setInterval(() => {
         if(run){
@@ -210,15 +214,15 @@ function updateCounters(){
     }
 }
 
-function SetNickname(event:InputEvent){
-    var nick = event.target.value;
-    if (nick.length < 50){
-        window.localStorage.setItem('name', `${event.target.value}`)
+function SetNickname(event?:InputEvent){
+    var elem = <HTMLInputElement>event!.target;
+    if (elem.value.length < 50){
+        window.localStorage.setItem('name', `${elem.value}`)
     }
     console.log(window.localStorage.getItem('name'))
 }
 
-function SettingsWindowOpener(event){
+function SettingsWindowOpener(event?:MouseEvent){
     if (!settingsOpen){
         document.getElementById('dropdown-content')?.setAttribute('style', 'display: flex;')
         settingsBtn.style.display = 'none'
@@ -230,8 +234,8 @@ function SettingsWindowOpener(event){
     }
 }
 
-function SetSquareSize(event:InputEvent = null){
-    squareSize = slider?.value
+function SetSquareSize(event?:Event){
+    squareSize = parseInt(slider.value)
     if(squareSize * columns + 10 < 236){        
         squareSize = 226 / columns;
         if(event){
