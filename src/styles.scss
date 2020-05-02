@@ -21,34 +21,41 @@ button:focus {
 }
 
 .background{
-    background: #126748;
+    background: #c3df47;
     width: 100%;
     min-height: 100vh;
     height: 100%;
+    transition: background-color 1s ease;
+
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+
 }
 
 .gameContainer{
     height: auto;
-    width: auto;    
+    width: auto;   
     margin-top: 50px;
-    margin-bottom: 50px;
+    margin-bottom: 50px; 
     box-shadow: 5px 2px 25px 5px rgba(0, 0, 0, 0.3);
     background: url("./img/noise.png");
+    border-radius: 5px;
     display: flex;
     flex-direction: column;
     align-items: center;
+
 }
 
 .menu{
+    border-radius: 5px;
+
     position: sticky;
     top:0;
     height: 60px;
     width: 100%;
-    background: red;
     background: url("./img/noise.png");
+    color: red;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -75,26 +82,32 @@ button:focus {
             text-indent: 0px;
             left: 0px;
             font-size: 30px;
-            color: red;
         }
+    }
+    .newgamebtn{
+        background: black;
+        border: none;
+        border-radius: 5px;
+        color: red;
+
+        cursor: pointer;
     }
 }
 
 
-.newgamebtn{
-    color: red;
-    background: black;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
+
   
-.uibtn {
-    color: red;
+.settingsbtn {
+    left: 50px;
+    bottom: 50px;
     background: black;
+    color: red;
+
+    position: fixed;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    display: block;
 }
   
 .dropdown {
@@ -190,14 +203,27 @@ button:focus {
             inset -1px -1px 1px #cacaca;
 }
 
+
 .bomb{
     border: 0px;
     background: black;
+    transition: background-color 0.3s ease;
+    box-shadow: inset -2px -2px 1px #979797, 
+                inset 2px 2px 1px #e6e6e6; 
+}
+
+.bomb-defused{
+    border: 0px;
+    background: green;
+    transition: background-color 0.3s ease;
+    box-shadow: inset -2px -2px 1px #979797, 
+                inset 2px 2px 1px #e6e6e6; 
 }
 
 
 .flagged{
     border: 0px;
+    transition: background-color 0.1s linear;
     background: orange;
     box-shadow: inset -2px -2px 1px #979797, 
     inset 2px 2px 1px #e6e6e6;
