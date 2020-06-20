@@ -1,7 +1,7 @@
 const Game = () => {
     var template =
     `
-    <div class="background" id="background">
+    <div class="background noselect" id="background">
         <div class="gameContainer" id="gameContainer">
             <div class="menu">
                 <div class="counter">
